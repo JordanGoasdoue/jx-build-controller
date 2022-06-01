@@ -358,13 +358,17 @@ func streamMaskedRunningBuildLogs(tl *tektonlog.TektonLogger, activity *jxv1.Pip
 	reader, writer := io.Pipe()
 	go func() {
 		var err error
+		log.Logger().Infof("GetRunningBuildLogs will be called for buildName %s", buildName)
 		for l := range tl.GetRunningBuildLogs(context.TODO(), activity, prList, buildName) {
 			if err == nil {
 				line := l.Line
+				log.Logger().Errorf("GetRunningBuildLogs: buildname %s => line is %s", buildName, line)
 				if logMasker != nil && l.ShouldMask {
 					line = logMasker.Mask(line)
 				}
 				_, err = writer.Write([]byte(line + "\n"))
+			} else {
+				log.Logger().Errorf("GetRunningBuildLogs: buildname %s => error is %s", buildName, err.Error())
 			}
 		}
 		if err == nil {
