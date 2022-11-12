@@ -131,11 +131,12 @@ func (o *Options) onPipelineRun(obj interface{}, ns string) {
 
 		if pa != nil {
 			activities.DefaultValues(pa)
-
-			err = o.StoreResources(ctx, pr, pa, ns)
-			if err != nil {
-				log.Logger().Warnf("failed to store resources for PipelineActivity %s in namespace %s: %s", pa.Name, ns, err.Error())
-			}
+			go func(ctx context.Context, pr *v1beta1.PipelineRun, pa *jxv1.PipelineActivity, ns string) {
+				err = o.StoreResources(ctx, pr, pa, ns)
+				if err != nil {
+					log.Logger().Warnf("failed to store resources for PipelineActivity %s in namespace %s: %s", pa.Name, ns, err.Error())
+				}
+			}(ctx, pr, pa, ns)
 		}
 	}
 }
